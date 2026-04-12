@@ -392,22 +392,24 @@ MAX_EVENTS_STORED = 10     # Oldest event auto-archived beyond this
 
 ## Phase Plan
 
-| Phase | Scope                                                    |
-|-------|----------------------------------------------------------|
-| 0     | OS upgrade (Buster → Bookworm), Python 3 setup,          |
-|       | hardware verification, Git repo initialised              |
-| 1     | Flask skeleton, Chromium kiosk mode, auto-launch         |
-|       | on boot via systemd                                      |
-| 2     | GPIO — button debounce and SSR control                   |
-| 3     | Camera capture with Picamera2                            |
-| 4     | Photo session state machine (states 1–8)                 |
-| 5     | Splash screen upload and processing pipeline             |
-| 6     | Admin interface (dashboard, splash manager,              |
-|       | event management, photo download/clear)                  |
-| 7     | Polaroid display with stacking animation                 |
-| 8     | Guest gallery with download                              |
-| 9     | WiFi mode management (dev / standalone / networked)      |
-| 10    | Slideshow mode                                           |
-| 11    | QR code on home screen                                   |
-| 12    | 8-bit animations throughout                              |
-| 13    | Boot splash (Plymouth theme)                             |
+| Phase | Scope                                                    | Status    |
+|-------|----------------------------------------------------------|-----------|
+| 0     | OS upgrade (Buster → Bookworm), Python 3 setup,          | Complete  |
+|       | hardware verification, Git repo initialised              |           |
+| 1     | Flask skeleton, Chromium kiosk mode, auto-launch         | Complete  |
+|       | on boot via systemd                                      |           |
+| 2     | Kiosk UI — full state machine UI with dummy data,        |           |
+|       | developed and tested locally (no hardware required)      |           |
+| 3     | GPIO — button debounce and SSR control                   |           |
+| 4     | Camera capture with Picamera2                            |           |
+| 5     | Photo session state machine (states 1–8)                 |           |
+| 6     | Splash screen upload and processing pipeline             |           |
+| 7     | Admin interface (dashboard, splash manager,              |           |
+|       | event management, photo download/clear)                  |           |
+| 8     | Polaroid display with stacking animation                 |           |
+| 9     | Guest gallery with download                              |           |
+| 10    | WiFi mode management (dev / standalone / networked)      |           |
+| 11    | Slideshow mode                                           |           |
+| 12    | QR code on home screen                                   |           |
+| 13    | 8-bit animations throughout                              |           |
+| 14    | Boot splash (Plymouth theme)                             |           |
