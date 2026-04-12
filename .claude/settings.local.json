@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p photos uploads static/splash static/fonts static/css static/js templates)",
+      "Bash(touch photos/.gitkeep uploads/.gitkeep static/splash/.gitkeep)"
+    ]
+  }
+}
