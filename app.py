@@ -1,10 +1,15 @@
+import threading
+import time
+
 import config
-from flask import Flask, render_template, jsonify
+from flask import Flask, jsonify, render_template
 
 app = Flask(__name__)
 
-# Hardware detection — imports are attempted but never fatal on non-Pi hardware.
-# GPIO_AVAILABLE and CAMERA_AVAILABLE are used by later phases to guard hardware calls.
+# ---------------------------------------------------------------------------
+# Hardware detection — imports attempted but never fatal on non-Pi hardware.
+# GPIO_AVAILABLE / CAMERA_AVAILABLE guard hardware calls in later phases.
+# ---------------------------------------------------------------------------
 try:
     import gpiozero  # noqa: F401
     GPIO_AVAILABLE = True
@@ -17,10 +22,59 @@ try:
 except ImportError:
     CAMERA_AVAILABLE = False
 
-# Session state — single integer matching the state machine (1–8).
-# Mutated by the GPIO/session logic added in later phases.
-current_state = 1
+# ---------------------------------------------------------------------------
+# Session state
+# ---------------------------------------------------------------------------
+# State 1–8 matching the spec state machine.
+# Mutated only inside state_lock.
+state_lock     = threading.Lock()
+current_state  = 1
+session_photos = []   # URL strings populated as each capture occurs (states 3–6)
 
+
+def t(real_val):
+    """Return DEV_DELAY when DEV_MODE is on, otherwise the real value."""
+    return config.DEV_DELAY if config.DEV_MODE else real_val
+
+
+def run_session():
+    """
+    Drive states 2–8 in a background thread.
+    Called once per session, spawned by /trigger.
+    Each state sleeps for its configured duration then advances.
+    """
+    global current_state, session_photos
+
+    # --- State 2: Pose ---
+    time.sleep(t(config.POSE_DELAY))
+    with state_lock:
+        current_state = 3
+
+    # --- States 3–6: Countdown & capture ---
+    for photo_num in range(1, 5):
+        time.sleep(t(config.COUNTDOWN_DURATION))
+        with state_lock:
+            session_photos.append("/static/dev/llama_{}.png".format(photo_num))
+            # 3→4, 4→5, 5→6, 6→7
+            current_state = 3 + photo_num
+
+    # --- State 7: Processing ---
+    time.sleep(t(config.PROCESSING_DELAY))
+    with state_lock:
+        current_state = 8
+
+    # --- State 8: Review ---
+    # Hold for 4× per-photo duration so the frontend finishes cycling.
+    hold = 4 * t(config.REVIEW_PHOTO_DURATION)
+    time.sleep(hold)
+    with state_lock:
+        current_state = 1
+        session_photos = []
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
 
 @app.route("/")
 def kiosk():
@@ -29,10 +83,30 @@ def kiosk():
 
 @app.route("/status")
 def status():
+    with state_lock:
+        state  = current_state
+        photos = list(session_photos)
     return jsonify({
-        "state": current_state,
-        "event_name": config.CURRENT_EVENT_NAME,
+        "state":                state,
+        "event_name":           config.CURRENT_EVENT_NAME,
+        "photos":               photos,
+        "review_photo_duration": t(config.REVIEW_PHOTO_DURATION),
+        "dev_mode":             config.DEV_MODE,
     })
+
+
+@app.route("/trigger", methods=["POST"])
+def trigger():
+    """Start a photo session. Only accepted when in state 1 (Home)."""
+    global current_state
+    with state_lock:
+        if current_state != 1:
+            return jsonify({"error": "session already in progress"}), 409
+        current_state = 2
+
+    thread = threading.Thread(target=run_session, daemon=True)
+    thread.start()
+    return jsonify({"ok": True})
 
 
 if __name__ == "__main__":

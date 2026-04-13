@@ -51,7 +51,6 @@ img {
 }
 
 /* ─── Splash background ─────────────────────────────────────────────────────── */
-/* Full-bleed background layer — splash images applied via inline style in JS */
 #splash {
     position: absolute;
     inset: 0;
@@ -61,14 +60,72 @@ img {
 }
 
 /* ─── Content overlay ───────────────────────────────────────────────────────── */
-/* State-specific UI sits above the splash layer */
 #content {
     position: absolute;
     inset: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 2;
+}
+
+/* ─── State headings ────────────────────────────────────────────────────────── */
+.state-heading {
+    font-family: 'PressStart2P', monospace;
+    font-size: clamp(32px, 5vw, 72px);
+    color: var(--c-primary);
+    text-align: center;
+    line-height: 1.6;
+    /* Hard pixel drop-shadow — no blur, pure offset */
+    text-shadow:
+        4px 4px 0 #000,
+        8px 8px 0 rgba(0,0,0,0.4);
+    padding: 0 40px;
+}
+
+/* ─── Countdown numeral ─────────────────────────────────────────────────────── */
+.countdown-numeral {
+    font-family: 'PressStart2P', monospace;
+    font-size: clamp(120px, 20vw, 240px);
+    color: var(--c-primary);
+    line-height: 1;
+    text-shadow:
+        6px 6px 0 #000,
+        12px 12px 0 rgba(0,0,0,0.5);
+}
+
+/* ─── Review photo ──────────────────────────────────────────────────────────── */
+.review-photo {
+    max-height: 72vh;
+    max-width: 72vw;
+    /* Simple polaroid-style white border — full stacking animation is Phase 8 */
+    border: 24px solid #fff;
+    border-bottom: 72px solid #fff;
+    box-shadow:
+        8px 8px 0 #000,
+        16px 16px 0 rgba(0,0,0,0.3);
+}
+
+/* ─── Llama dancer ──────────────────────────────────────────────────────────── */
+#llama-dancer {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+}
+
+#llama-dancer img {
+    /* 32×32 sprite scaled up 8× — each pixel becomes 8×8 screen pixels */
+    width: 256px;
+    height: 256px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+#llama-dancer.hidden {
+    display: none;
 }
 
 /* ─── Dev state label ───────────────────────────────────────────────────────── */

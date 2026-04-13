@@ -53,12 +53,14 @@ photobooth_v2/
 ├── camera_handler.py       # Photo capture logic
 ├── image_processor.py      # Resize, crop, blur, overlay text
 ├── config.py               # All configurable values
+├── generate_dev_assets.py  # One-time script: generates dummy images for dev/testing
 ├── static/
 │   ├── css/
 │   │   └── style.css       # All styles — kiosk + web UI
 │   ├── js/
 │   │   └── app.js          # Frontend logic
-│   └── splash/             # 8 processed splash screen images
+│   ├── splash/             # 8 processed splash screen images
+│   └── dev/                # Dev-only assets (dummy photos, llama animation frames)
 ├── templates/
 │   ├── kiosk.html          # Fullscreen booth display
 │   ├── gallery.html        # Guest photo gallery
@@ -346,14 +348,19 @@ first resolution path — software stack and housing unchanged.
 All tuneable values in one place. No hunting through code before an event.
 
 ```python
+# Development
+DEV_MODE = True    # Shorten all delays to DEV_DELAY for local testing
+DEV_DELAY = 0.5    # Seconds — replaces all timing values when DEV_MODE = True
+
 # Event
 CURRENT_EVENT_NAME = "My Party"
 
 # Timing (seconds)
-POSE_DELAY = 2
-COUNTDOWN_DURATION = 1
-REVIEW_HOLD_DURATION = 10
-SLIDESHOW_INTERVAL = 5
+POSE_DELAY            = 2
+COUNTDOWN_DURATION    = 1
+PROCESSING_DELAY      = 2
+REVIEW_PHOTO_DURATION = 2   # How long each photo is shown in the review (state 8)
+SLIDESHOW_INTERVAL    = 5
 
 # Camera
 PHOTO_RESOLUTION = (1600, 1200)
@@ -398,7 +405,7 @@ MAX_EVENTS_STORED = 10     # Oldest event auto-archived beyond this
 |       | hardware verification, Git repo initialised              |           |
 | 1     | Flask skeleton, Chromium kiosk mode, auto-launch         | Complete  |
 |       | on boot via systemd                                      |           |
-| 2     | Kiosk UI — full state machine UI with dummy data,        |           |
+| 2     | Kiosk UI — full state machine UI with dummy data,        | Complete  |
 |       | developed and tested locally (no hardware required)      |           |
 | 3     | GPIO — button debounce and SSR control                   |           |
 | 4     | Camera capture with Picamera2                            |           |

@@ -10,10 +10,15 @@
 </head>
 <body>
     <div class="kiosk-root">
-        <!-- Splash background — populated with images from Phase 4 onwards -->
+        <!-- Splash background — swapped per state by JS -->
         <div id="splash"></div>
 
-        <!-- Main content overlay — state-specific UI injected here in later phases -->
+        <!-- Home-screen llama dancer — shown only in state 1 -->
+        <div id="llama-dancer" class="hidden">
+            <img id="llama-frame" src="/static/dev/llama_dance_0.png" alt="">
+        </div>
+
+        <!-- Main content overlay — state-specific UI rendered here by JS -->
         <div id="content"></div>
 
         <!-- Dev aid: current state indicator, bottom-left corner -->

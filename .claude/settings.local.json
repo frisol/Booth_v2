@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(mkdir -p photos uploads static/splash static/fonts static/css static/js templates)",
-      "Bash(touch photos/.gitkeep uploads/.gitkeep static/splash/.gitkeep)"
+      "Bash(touch photos/.gitkeep uploads/.gitkeep static/splash/.gitkeep)",
+      "Bash(python generate_dev_assets.py)",
+      "Bash(pip install:*)",
+      "Bash(python3 -m pip install Pillow --quiet)",
+      "Bash(python3 generate_dev_assets.py)",
+      "Bash(timeout 5 python3 -c ':*)",
+      "Bash(python3 -c ':*)"
     ]
   }
 }

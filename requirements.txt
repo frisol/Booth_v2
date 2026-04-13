@@ -1,0 +1,10 @@
+# Core dependencies
+# Install with: pip install flask Pillow "qrcode[pil]"
+flask>=3.0
+Pillow>=10.0
+qrcode>=7.4
+
+# Pi hardware — pre-installed on Raspberry Pi OS Bookworm.
+# Install with: sudo apt install python3-gpiozero python3-picamera2
+gpiozero>=2.0
+picamera2>=0.3
