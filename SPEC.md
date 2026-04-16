@@ -135,23 +135,21 @@ to the kiosk display.
 
 ### State 8 — All Done / Review
 - Displays splash image 8 with overlay "All done"
-- The 4 polaroid photos displayed on screen:
+- All 4 polaroid photos displayed simultaneously in a 2×2 grid:
   - Classic white polaroid border (thick bottom border)
-  - Photos stacked with slight random offset angles (±5–10 degrees)
-  - Cards animate in one at a time — 8-bit stepped animation
-  - All 4 displayed simultaneously after animation completes
+  - Phase 8 adds: stacked layout with random rotation and animated card entry
 - SSR off (GPIO 11), light turns OFF
-- After timeout (configurable), returns to State 1
+- After timeout (configurable `REVIEW_HOLD_DURATION`), returns to State 1
 
 ---
 
 ## Polaroid Display
 
 - Each photo rendered with a white border in classic polaroid style
-- Photos displayed stacked with randomised rotation (±5–10 degrees)
-- Cards animate in one at a time — blocky stepped movement, not smooth
-- All 4 displayed simultaneously after animation completes
-- Display held for configurable duration before returning to home screen
+- All 4 photos displayed simultaneously in a 2×2 grid after capture
+- Phase 8 adds: stacked layout with randomised rotation (±5–10 degrees),
+  cards animate in one at a time — blocky stepped movement, not smooth
+- Display held for `REVIEW_HOLD_DURATION` seconds before returning to home screen
 
 ---
 
@@ -359,7 +357,7 @@ CURRENT_EVENT_NAME = "My Party"
 POSE_DELAY            = 2
 COUNTDOWN_DURATION    = 1
 PROCESSING_DELAY      = 2
-REVIEW_PHOTO_DURATION = 2   # How long each photo is shown in the review (state 8)
+REVIEW_HOLD_DURATION  = 8   # Seconds state 8 (review grid) is held before returning to home
 SLIDESHOW_INTERVAL    = 5
 
 # Camera

@@ -64,8 +64,8 @@ def run_session():
         current_state = 8
 
     # --- State 8: Review ---
-    # Hold for 4× per-photo duration so the frontend finishes cycling.
-    hold = 4 * t(config.REVIEW_PHOTO_DURATION)
+    # Hold long enough for guests to see all 4 photos in the grid.
+    hold = t(config.REVIEW_HOLD_DURATION)
     time.sleep(hold)
     with state_lock:
         current_state = 1
@@ -87,11 +87,10 @@ def status():
         state  = current_state
         photos = list(session_photos)
     return jsonify({
-        "state":                state,
-        "event_name":           config.CURRENT_EVENT_NAME,
-        "photos":               photos,
-        "review_photo_duration": t(config.REVIEW_PHOTO_DURATION),
-        "dev_mode":             config.DEV_MODE,
+        "state":      state,
+        "event_name": config.CURRENT_EVENT_NAME,
+        "photos":     photos,
+        "dev_mode":   config.DEV_MODE,
     })
 
 

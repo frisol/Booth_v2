@@ -95,16 +95,25 @@ img {
         12px 12px 0 rgba(0,0,0,0.5);
 }
 
-/* ─── Review photo ──────────────────────────────────────────────────────────── */
+/* ─── Review grid (state 8) — all 4 photos shown simultaneously ─────────────── */
+.review-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 32px;
+}
+
 .review-photo {
-    max-height: 72vh;
-    max-width: 72vw;
-    /* Simple polaroid-style white border — full stacking animation is Phase 8 */
-    border: 24px solid #fff;
-    border-bottom: 72px solid #fff;
+    display: block;
+    /* Size each photo to fit two rows within the 1600×1200 screen */
+    max-width: 38vw;   /* ≈608px — two columns fit with gap and padding */
+    max-height: 36vh;  /* ≈432px — two rows fit with gap and padding */
+    /* Polaroid-style white border — stacking animation added in Phase 8 */
+    border: 16px solid #fff;
+    border-bottom: 48px solid #fff;
     box-shadow:
-        8px 8px 0 #000,
-        16px 16px 0 rgba(0,0,0,0.3);
+        6px 6px 0 #000,
+        12px 12px 0 rgba(0,0,0,0.3);
 }
 
 /* ─── Llama dancer ──────────────────────────────────────────────────────────── */
@@ -113,15 +122,38 @@ img {
     bottom: 120px;
     left: 50%;
     transform: translateX(-50%);
+    /* Explicit size required — children are absolutely positioned */
+    width: 256px;
+    height: 256px;
     z-index: 3;
 }
 
+/* Both frames stacked on top of each other */
 #llama-dancer img {
+    position: absolute;
+    top: 0;
+    left: 0;
     /* 32×32 sprite scaled up 8× — each pixel becomes 8×8 screen pixels */
     width: 256px;
     height: 256px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+}
+
+/* Frame 1 starts hidden; CSS animation takes over when .animating is present */
+#llama-frame-1 {
+    opacity: 0;
+}
+
+/* 2-frame toggle at 4 fps — runs entirely on the compositor, off the JS thread */
+@keyframes llama-blink {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+#llama-dancer.animating #llama-frame-1 {
+    /* 0.25 s half-cycle × alternate = 250 ms per frame = 4 fps */
+    animation: llama-blink 0.25s steps(1, end) infinite alternate;
 }
 
 #llama-dancer.hidden {

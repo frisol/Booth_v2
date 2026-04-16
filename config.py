@@ -17,7 +17,7 @@ CURRENT_EVENT_ID = "default"
 POSE_DELAY            = 2
 COUNTDOWN_DURATION    = 1
 PROCESSING_DELAY      = 2
-REVIEW_PHOTO_DURATION = 2   # How long each photo is shown in the review (state 8)
+REVIEW_HOLD_DURATION  = 8   # Seconds state 8 (review grid) is held before returning to home
 SLIDESHOW_INTERVAL    = 5
 
 # Camera

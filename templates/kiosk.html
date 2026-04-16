@@ -7,15 +7,26 @@
     <meta name="viewport" content="width=1600">
     <title>Photobooth</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Preload all 8 splash images so background swaps are instant -->
+    <link rel="preload" as="image" href="/static/splash/splash_1.png">
+    <link rel="preload" as="image" href="/static/splash/splash_2.png">
+    <link rel="preload" as="image" href="/static/splash/splash_3.png">
+    <link rel="preload" as="image" href="/static/splash/splash_4.png">
+    <link rel="preload" as="image" href="/static/splash/splash_5.png">
+    <link rel="preload" as="image" href="/static/splash/splash_6.png">
+    <link rel="preload" as="image" href="/static/splash/splash_7.png">
+    <link rel="preload" as="image" href="/static/splash/splash_8.png">
 </head>
 <body>
     <div class="kiosk-root">
         <!-- Splash background — swapped per state by JS -->
         <div id="splash"></div>
 
-        <!-- Home-screen llama dancer — shown only in state 1 -->
+        <!-- Home-screen llama dancer — shown only in state 1.
+             Two frames stacked; CSS animation toggles frame-1 opacity. -->
         <div id="llama-dancer" class="hidden">
-            <img id="llama-frame" src="/static/dev/llama_dance_0.png" alt="">
+            <img id="llama-frame-0" src="/static/dev/llama_dance_0.png" alt="">
+            <img id="llama-frame-1" src="/static/dev/llama_dance_1.png" alt="">
         </div>
 
         <!-- Main content overlay — state-specific UI rendered here by JS -->

@@ -21,56 +21,18 @@
     var splashEl    = document.getElementById('splash');
     var contentEl   = document.getElementById('content');
     var llamaDancer = document.getElementById('llama-dancer');
-    var llamaFrame  = document.getElementById('llama-frame');
 
     // ---------------------------------------------------------------------------
-    // Llama animation
+    // Llama animation — controlled entirely by CSS via the 'animating' class.
+    // No JS timers: the @keyframes animation runs on the compositor thread,
+    // isolated from poll-driven event loop pressure.
     // ---------------------------------------------------------------------------
-    var llamaFrameIdx = 0;
-    var llamaTimer    = null;
-
     function startLlama() {
-        if (llamaTimer) return;
-        llamaTimer = setInterval(function () {
-            llamaFrameIdx = 1 - llamaFrameIdx;
-            llamaFrame.src = '/static/dev/llama_dance_' + llamaFrameIdx + '.png';
-        }, 250); // 4 fps — classic 8-bit feel
+        llamaDancer.classList.add('animating');
     }
 
     function stopLlama() {
-        if (llamaTimer) { clearInterval(llamaTimer); llamaTimer = null; }
-        llamaFrameIdx = 0;
-        llamaFrame.src = '/static/dev/llama_dance_0.png';
-    }
-
-    // ---------------------------------------------------------------------------
-    // Review photo cycling (state 8)
-    // ---------------------------------------------------------------------------
-    var reviewTimer  = null;
-    var reviewPhotos = [];
-    var reviewDuration = 2000; // ms — updated from server on state 8 entry
-
-    function clearReview() {
-        if (reviewTimer) { clearTimeout(reviewTimer); reviewTimer = null; }
-        reviewPhotos = [];
-    }
-
-    function startReview(photos, durationSecs) {
-        clearReview();
-        reviewPhotos  = photos.slice();
-        reviewDuration = durationSecs * 1000;
-        var idx = 0;
-
-        function showNext() {
-            if (idx >= reviewPhotos.length) return;
-            contentEl.innerHTML =
-                '<img class="review-photo" src="' + reviewPhotos[idx] + '" alt="Photo ' + (idx + 1) + '">';
-            idx++;
-            if (idx < reviewPhotos.length) {
-                reviewTimer = setTimeout(showNext, reviewDuration);
-            }
-        }
-        showNext();
+        llamaDancer.classList.remove('animating');
     }
 
     // ---------------------------------------------------------------------------
@@ -92,9 +54,6 @@
     // State entry — called once per state transition
     // ---------------------------------------------------------------------------
     function onStateEnter(state, data) {
-        // Clear any running review cycle
-        clearReview();
-
         // Splash background
         splashEl.style.backgroundImage =
             'url(/static/splash/splash_' + state + '.png)';
@@ -134,10 +93,17 @@
                 break;
 
             case 8:
-                startReview(
-                    data.photos || [],
-                    data.review_photo_duration || 2
-                );
+                // All 4 photos displayed simultaneously in a 2×2 grid.
+                // Eliminates the server/client timing race that caused
+                // 2–4 photos to appear depending on Pi load.
+                var photos = data.photos || [];
+                var html = '<div class="review-grid">';
+                for (var i = 0; i < photos.length; i++) {
+                    html += '<img class="review-photo" src="' + photos[i] +
+                            '" alt="Photo ' + (i + 1) + '">';
+                }
+                html += '</div>';
+                contentEl.innerHTML = html;
                 break;
 
             default:
@@ -146,7 +112,11 @@
     }
 
     // ---------------------------------------------------------------------------
-    // Polling
+    // Polling — recursive setTimeout so requests never overlap.
+    // setInterval fires unconditionally; on a loaded Pi a slow Flask response
+    // causes overlapping fetches that can produce back-to-back state transitions
+    // (the "catch-up" effect). setTimeout schedules the next poll only after
+    // the current fetch resolves, keeping requests serialised.
     // ---------------------------------------------------------------------------
     var lastErrorLogged = false;
 
@@ -174,9 +144,13 @@
                     console.warn('Photobooth: lost connection to server', err);
                     lastErrorLogged = true;
                 }
+            })
+            .then(function () {
+                // Schedule next poll after this one completes (success or error).
+                // .then() after .catch() runs unconditionally when catch returns normally.
+                setTimeout(pollStatus, POLL_INTERVAL);
             });
     }
 
-    setInterval(pollStatus, POLL_INTERVAL);
-    pollStatus(); // immediate call on load
+    pollStatus(); // immediate first call; subsequent polls self-schedule
 }());
