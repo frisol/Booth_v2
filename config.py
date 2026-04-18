@@ -16,6 +16,7 @@ CURRENT_EVENT_ID = "default"
 # Timing (seconds)
 POSE_DELAY            = 2
 COUNTDOWN_DURATION    = 1
+BETWEEN_CAPTURES_DELAY = 0.5   # seconds light stays off between captures
 PROCESSING_DELAY      = 2
 REVIEW_HOLD_DURATION  = 8   # Seconds state 8 (review grid) is held before returning to home
 SLIDESHOW_INTERVAL    = 5

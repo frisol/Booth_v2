@@ -53,6 +53,7 @@ def run_session():
         gpio_handler.set_light(True)        # ON: countdown splash appears
         time.sleep(t(config.COUNTDOWN_DURATION))
         gpio_handler.set_light(False)       # OFF: capture taken
+        time.sleep(t(config.BETWEEN_CAPTURES_DELAY))
         with state_lock:
             session_photos.append("/static/dev/llama_{}.png".format(photo_num))
             # 3→4, 4→5, 5→6, 6→7
