@@ -11,7 +11,7 @@ Raspberry Pi photobooth for parties. Single physical button triggers a 4-photo s
 - **Python 3.11+** / Flask
 - **Frontend:** HTML + CSS + Vanilla JS (no framework)
 - **Camera:** Picamera2
-- **GPIO:** gpiozero (button on GPIO 18, SSR/light on GPIO 11)
+- **GPIO:** gpiozero (button on GPIO 24 / pin 18, SSR/light on GPIO 17 / pin 11)
 - **Image processing:** Pillow
 - **QR code:** qrcode
 - **Network:** hostapd + dnsmasq (AP mode), mDNS `photobooth.local`
@@ -57,13 +57,13 @@ uploads/              # Raw splash uploads (pre-processing only)
 
 ## Photo session state machine
 
-| State | Name        | Light | Notes                                      |
-|-------|-------------|-------|--------------------------------------------|
-| 1     | Home        | OFF   | Idle, QR code shown, waiting for button    |
-| 2     | Pose        | ON    | SSR fires, 2 s pause                       |
-| 3–6   | Countdown   | ON    | 4 captures, thumbnails generated inline    |
-| 7     | Processing  | ON    | Polaroid borders applied in bg thread      |
-| 8     | Done/Review | OFF   | Polaroids displayed, timeout → State 1     |
+| State | Name        | Light        | Notes                                                     |
+|-------|-------------|--------------|-----------------------------------------------------------|
+| 1     | Home        | OFF          | Idle, QR code shown, waiting for button                   |
+| 2     | Pose        | OFF          | 2 s pause — no light needed                               |
+| 3–6   | Countdown   | ON then OFF  | Per capture: ON when splash appears, OFF after capture    |
+| 7     | Processing  | OFF          | Polaroid borders applied in bg thread                     |
+| 8     | Done/Review | OFF          | Polaroids displayed, timeout → State 1                    |
 
 ---
 
@@ -82,8 +82,8 @@ uploads/              # Raw splash uploads (pre-processing only)
 
 | Pin     | Component | Behaviour                                    |
 |---------|-----------|----------------------------------------------|
-| GPIO 18 | Button    | Pull-up, active LOW, 50 ms debounce          |
-| GPIO 11 | SSR/light | HIGH = ON (states 2–6), LOW = OFF otherwise  |
+| GPIO 24 (pin 18) | Button    | Pull-up, active LOW, 50 ms debounce                              |
+| GPIO 17 (pin 11) | SSR/light | ON when countdown splash appears (states 3–6), OFF after capture |
 
 ---
 

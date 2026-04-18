@@ -1,4 +1,4 @@
-# gpio_handler.py — Button (GPIO 18) and SSR/light (GPIO 11) control.
+# gpio_handler.py — Button (GPIO 24, physical pin 18) and SSR/light (GPIO 17, physical pin 11) control.
 # Safe to import on non-Pi hardware; all hardware calls are no-ops when
 # gpiozero is unavailable.
 

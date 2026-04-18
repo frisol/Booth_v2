@@ -21,8 +21,8 @@ after an event.
 | Board      | Raspberry Pi 3+                    |
 | Camera     | PiCamera (attached) — confirmed working. CLI tool on Bookworm is `rpicam-still`, not `libcamera-hello` |
 | Display    | LCD monitor 1600×1200 (4:3 ratio)  |
-| Input      | 1 physical button — GPIO 18        |
-| Lighting   | LED downlight via SSR — GPIO 11    |
+| Input      | 1 physical button — GPIO 24 (physical pin 18) |
+| Lighting   | LED downlight via SSR — GPIO 17 (physical pin 11) |
 | Housing    | Plywood enclosure                  |
 
 ---
@@ -114,18 +114,20 @@ to the kiosk display.
 - Displays splash image 1 with text overlay "Push the button"
 - QR code displayed in corner pointing to `http://photobooth.local`
 - 8-bit idle animation plays on screen
-- Waiting for button press (GPIO 18)
+- Waiting for button press (GPIO 24)
 
 ### State 2 — Strike a Pose
-- Button pressed → SSR fires (GPIO 11), light turns ON
+- Button pressed — SSR remains OFF, no light during pose
 - Displays splash image 2 with text overlay "Strike a pose"
 - Brief pause (configurable, default 2 seconds)
 
 ### States 3–6 — Countdown & Capture (×4)
 - For each of 4 photos:
   - Display splash image (3–6) with overlay "1", "2", "3", "4"
+  - SSR ON — light fires as countdown splash appears
   - Brief countdown display (configurable)
   - Camera captures photo
+  - SSR OFF — light off immediately after capture, before next state begins
   - Full resolution photo saved to `/photos/[event-id]/full/`
   - Thumbnail generated immediately and saved to `/photos/[event-id]/thumbs/`
 
@@ -138,7 +140,7 @@ to the kiosk display.
 - All 4 polaroid photos displayed simultaneously in a 2×2 grid:
   - Classic white polaroid border (thick bottom border)
   - Phase 8 adds: stacked layout with random rotation and animated card entry
-- SSR off (GPIO 11), light turns OFF
+- SSR already OFF (turned off after final capture in state 6)
 - After timeout (configurable `REVIEW_HOLD_DURATION`), returns to State 1
 
 ---
@@ -294,11 +296,12 @@ Pi supports three network modes, selected via `/admin/wifi`.
 
 | Pin      | Component        | Behaviour                                         |
 |----------|-----------------|---------------------------------------------------|
-| GPIO 18  | Physical button | Pull-up. Button press = LOW. Triggers photo       |
-|          |                 | sequence. Debounced (50ms).                       |
-| GPIO 11  | SSR / LED light | HIGH = light ON. LOW = light OFF.                 |
-|          |                 | ON during pose and capture states (2–6).          |
-|          |                 | OFF during all other states.                      |
+| GPIO 24  | Physical button | Pull-up. Button press = LOW. Triggers photo       |
+| (pin 18) |                 | sequence. Debounced (50ms).                       |
+| GPIO 17  | SSR / LED light | HIGH = light ON. LOW = light OFF.                 |
+| (pin 11) |                 | ON when countdown splash appears (states 3–6).    |
+|          |                 | OFF after each capture and at all other times.    |
+|          |                 | OFF during state 2 (pose) — no light needed.      |
 
 ---
 
@@ -405,7 +408,7 @@ MAX_EVENTS_STORED = 10     # Oldest event auto-archived beyond this
 |       | on boot via systemd                                      |           |
 | 2     | Kiosk UI — full state machine UI with dummy data,        | Complete  |
 |       | developed and tested locally (no hardware required)      |           |
-| 3     | GPIO — button debounce and SSR control                   |           |
+| 3     | GPIO — button debounce and SSR control                   | Complete  |
 | 4     | Camera capture with Picamera2                            |           |
 | 5     | Photo session state machine (states 1–8)                 |           |
 | 6     | Splash screen upload and processing pipeline             |           |
