@@ -39,7 +39,7 @@ def run_session():
     Drive states 2–8 in a background thread.
     Called once per session, spawned by _start_session().
     Each state sleeps for its configured duration then advances.
-    Light is already ON when this runs (set in _start_session).
+    Light starts OFF; toggled ON/OFF around each individual capture.
     """
     global current_state, session_photos
 
@@ -50,14 +50,13 @@ def run_session():
 
     # --- States 3–6: Countdown & capture ---
     for photo_num in range(1, 5):
+        gpio_handler.set_light(True)        # ON: countdown splash appears
         time.sleep(t(config.COUNTDOWN_DURATION))
+        gpio_handler.set_light(False)       # OFF: capture taken
         with state_lock:
             session_photos.append("/static/dev/llama_{}.png".format(photo_num))
             # 3→4, 4→5, 5→6, 6→7
             current_state = 3 + photo_num
-
-    # Capture complete — entering state 7. Turn light off now.
-    gpio_handler.set_light(False)
 
     # --- State 7: Processing ---
     time.sleep(t(config.PROCESSING_DELAY))
@@ -106,7 +105,6 @@ def _start_session():
         if current_state != 1:
             return False
         current_state = 2
-        gpio_handler.set_light(True)
     thread = threading.Thread(target=run_session, daemon=True)
     thread.start()
     return True
