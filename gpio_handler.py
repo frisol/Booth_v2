@@ -2,6 +2,8 @@
 # Safe to import on non-Pi hardware; all hardware calls are no-ops when
 # gpiozero is unavailable.
 
+from config import BUTTON_PIN, LIGHT_PIN, DEBOUNCE_S
+
 try:
     from gpiozero import Button, OutputDevice
     _GPIO_AVAILABLE = True
@@ -10,10 +12,6 @@ except ImportError:
 
 _button = None
 _light  = None
-
-BUTTON_PIN  = 18
-LIGHT_PIN   = 11
-DEBOUNCE_S  = 0.05   # 50 ms
 
 
 def setup(on_press_callback):

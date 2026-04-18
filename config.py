@@ -35,6 +35,11 @@ OVERLAY_FONT_SIZE = 120
 # Admin
 ADMIN_PASSWORD = "changeme"
 
+# GPIO
+BUTTON_PIN = 24 # Physical pin 18 = GPIO 24
+LIGHT_PIN  = 17 # Physical pin 11 = GPIO 17
+DEBOUNCE_S = 0.05   # 50 ms
+
 # Storage
 PHOTOS_DIR = "photos"
 MAX_EVENTS_STORED = 10       # Oldest event auto-archived beyond this
