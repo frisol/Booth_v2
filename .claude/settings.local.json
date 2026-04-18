@@ -8,7 +8,9 @@
       "Bash(python3 -m pip install Pillow --quiet)",
       "Bash(python3 generate_dev_assets.py)",
       "Bash(timeout 5 python3 -c ':*)",
-      "Bash(python3 -c ':*)"
+      "Bash(python3 -c ':*)",
+      "Bash(python -m py_compile gpio_handler.py)",
+      "Bash(python -m py_compile app.py)"
     ]
   }
 }

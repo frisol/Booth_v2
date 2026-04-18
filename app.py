@@ -1,21 +1,18 @@
+import atexit
 import threading
 import time
 
 import config
+import gpio_handler
 from flask import Flask, jsonify, render_template
 
 app = Flask(__name__)
 
 # ---------------------------------------------------------------------------
-# Hardware detection — imports attempted but never fatal on non-Pi hardware.
-# GPIO_AVAILABLE / CAMERA_AVAILABLE guard hardware calls in later phases.
+# Hardware detection — camera import attempted but never fatal on non-Pi.
+# CAMERA_AVAILABLE guards camera calls in later phases.
+# GPIO is managed entirely by gpio_handler (safe to call on non-Pi).
 # ---------------------------------------------------------------------------
-try:
-    import gpiozero  # noqa: F401
-    GPIO_AVAILABLE = True
-except ImportError:
-    GPIO_AVAILABLE = False
-
 try:
     from picamera2 import Picamera2  # noqa: F401
     CAMERA_AVAILABLE = True
@@ -40,8 +37,9 @@ def t(real_val):
 def run_session():
     """
     Drive states 2–8 in a background thread.
-    Called once per session, spawned by /trigger.
+    Called once per session, spawned by _start_session().
     Each state sleeps for its configured duration then advances.
+    Light is already ON when this runs (set in _start_session).
     """
     global current_state, session_photos
 
@@ -58,6 +56,9 @@ def run_session():
             # 3→4, 4→5, 5→6, 6→7
             current_state = 3 + photo_num
 
+    # Capture complete — entering state 7. Turn light off now.
+    gpio_handler.set_light(False)
+
     # --- State 7: Processing ---
     time.sleep(t(config.PROCESSING_DELAY))
     with state_lock:
@@ -65,8 +66,7 @@ def run_session():
 
     # --- State 8: Review ---
     # Hold long enough for guests to see all 4 photos in the grid.
-    hold = t(config.REVIEW_HOLD_DURATION)
-    time.sleep(hold)
+    time.sleep(t(config.REVIEW_HOLD_DURATION))
     with state_lock:
         current_state = 1
         session_photos = []
@@ -94,18 +94,38 @@ def status():
     })
 
 
-@app.route("/trigger", methods=["POST"])
-def trigger():
-    """Start a photo session. Only accepted when in state 1 (Home)."""
+def _start_session():
+    """
+    Shared entry point for session start — used by both the /trigger HTTP
+    route and the GPIO button callback.
+    Returns True if a session was started, False if one was already running.
+    Thread-safe: may be called from gpiozero's internal thread.
+    """
     global current_state
     with state_lock:
         if current_state != 1:
-            return jsonify({"error": "session already in progress"}), 409
+            return False
         current_state = 2
-
+        gpio_handler.set_light(True)
     thread = threading.Thread(target=run_session, daemon=True)
     thread.start()
-    return jsonify({"ok": True})
+    return True
+
+
+@app.route("/trigger", methods=["POST"])
+def trigger():
+    """Start a photo session. Only accepted when in state 1 (Home)."""
+    if _start_session():
+        return jsonify({"ok": True})
+    return jsonify({"error": "session already in progress"}), 409
+
+
+# ---------------------------------------------------------------------------
+# GPIO setup — button callback fires _start_session() from gpiozero's thread.
+# No-op on non-Pi hardware where gpiozero is unavailable.
+# ---------------------------------------------------------------------------
+gpio_handler.setup(lambda: _start_session())
+atexit.register(gpio_handler.cleanup)
 
 
 if __name__ == "__main__":
